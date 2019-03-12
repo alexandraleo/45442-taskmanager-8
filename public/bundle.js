@@ -95,13 +95,36 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils.js */ "./src/utils.js");
-/* harmony import */ var _make_filters_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./make-filters.js */ "./src/make-filters.js");
+/* harmony import */ var _show_filters_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./show-filters.js */ "./src/show-filters.js");
+/* harmony import */ var _show_tasks_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./show-tasks.js */ "./src/show-tasks.js");
 
 
 
 
 const TASKS_QUANTITY = 5;
+const taskNode = document.querySelector(`.board__tasks`);
+
+taskNode.addEventListener(`click`, _show_tasks_js__WEBPACK_IMPORTED_MODULE_1__["onFilterLoaderClick"]);
+
+Object(_show_filters_js__WEBPACK_IMPORTED_MODULE_0__["showFilters"])();
+Object(_show_tasks_js__WEBPACK_IMPORTED_MODULE_1__["default"])(TASKS_QUANTITY);
+
+
+/***/ }),
+
+/***/ "./src/show-filters.js":
+/*!*****************************!*\
+  !*** ./src/show-filters.js ***!
+  \*****************************/
+/*! exports provided: showFilters */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showFilters", function() { return showFilters; });
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils.js */ "./src/utils.js");
+
+
 const filterNode = document.querySelector(`.main__filter`);
 const filters = [
   {filterName: `ALL`, count: Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["default"])(0, 15), isChecked: true},
@@ -112,20 +135,78 @@ const filters = [
   {filterName: `TAGS`, count: Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["default"])(0, 15), isDisabled: true},
   {filterName: `ARCHIVE`, count: Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["default"])(0, 15), isDisabled: true}
 ];
-const taskNode = document.querySelector(`.board__tasks`);
+
+const getFilterElement = (el) => {
+  const {filterName, count, isChecked = false, isDisabled = false} = el;
+  return `<input
+  type="radio"
+  id="filter__${filterName}"
+  class="filter__input visually-hidden"
+  name="filter"
+  ${isChecked ? `checked` : ``}
+  ${isDisabled ? `disabled` : ``}
+/>
+  <label for="filter__${filterName}" class="filter__label">
+    ${filterName} <span class="filter__${filterName}-count">${count}</span></label
+  >`;
+};
 
 const showFilters = () => {
   const fragment = document.createDocumentFragment();
   const parser = new DOMParser();
 
   filters.forEach((el) => {
-    const filterElementString = Object(_make_filters_js__WEBPACK_IMPORTED_MODULE_1__["default"])(el);
+    const filterElementString = getFilterElement(el);
     const filterElementObj = parser.parseFromString(filterElementString, `text/html`);
     const childNodes = filterElementObj.body.childNodes;
     childNodes.forEach((elem) => fragment.appendChild(elem));
   });
   filterNode.appendChild(fragment);
 };
+
+
+
+/***/ }),
+
+/***/ "./src/show-tasks.js":
+/*!***************************!*\
+  !*** ./src/show-tasks.js ***!
+  \***************************/
+/*! exports provided: default, onFilterLoaderClick */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return showTasks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onFilterLoaderClick", function() { return onFilterLoaderClick; });
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils.js */ "./src/utils.js");
+
+
+const taskNode = document.querySelector(`.board__tasks`);
+
+function showTasks(quantity) {
+  let taskElementString = ``;
+  const fragment = document.createDocumentFragment();
+  const parser = new DOMParser();
+  for (let i = 0; i < quantity; i++) {
+    taskElementString += templateTask;
+    const cardElementObj = parser.parseFromString(taskElementString, `text/html`);
+    fragment.appendChild(cardElementObj.body.childNodes[0]);
+  }
+  taskNode.appendChild(fragment);
+}
+
+const onFilterLoaderClick = () => {
+  taskNode.innerHTML = ``;
+  showTasks(Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["default"])(1, 10));
+};
+
+const getRandomFromArray = (array) => {
+  array.sort(() => Math.random() - 0.5);
+};
+
+getRandomFromArray([5, 3, 2, 1]);
+console.log(getRandomFromArray([5, 3, 2, 1]));
 
 const templateTask = `<article class="card card--edit card--black">
             <form class="card__form" method="get">
@@ -374,55 +455,6 @@ This is example of new task, you can add picture, set date and time, add tags.</
               </div>
             </form>
           </article>`;
-const showTasks = function (quantity) {
-  let taskElementString = ``;
-  const fragment = document.createDocumentFragment();
-  const parser = new DOMParser();
-  for (let i = 0; i < quantity; i++) {
-    taskElementString += templateTask;
-    const cardElementObj = parser.parseFromString(taskElementString, `text/html`);
-    fragment.appendChild(cardElementObj.body.childNodes[0]);
- }
-  taskNode.appendChild(fragment);
-};
-
-showFilters();
-showTasks(TASKS_QUANTITY);
-
-const onFilterLoaderClick = () => {
-  taskNode.innerHTML = ``;
-  showTasks(Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["default"])(1, 10));
-};
-
-taskNode.addEventListener(`click`, onFilterLoaderClick);
-
-
-/***/ }),
-
-/***/ "./src/make-filters.js":
-/*!*****************************!*\
-  !*** ./src/make-filters.js ***!
-  \*****************************/
-/*! exports provided: getFilterElement */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFilterElement", function() { return getFilterElement; });
-const getFilterElement = (el) => {
-  const {filterName, count, isChecked = false, isDisabled = false} = el;
-  return `<input
-  type="radio"
-  id="filter__${filterName}"
-  class="filter__input visually-hidden"
-  name="filter"
-  ${isChecked ? `checked` : ``}
-  ${isDisabled ? `disabled` : ``}
-/>
-  <label for="filter__${filterName}" class="filter__label">
-    ${filterName} <span class="filter__${filterName}-count">${count}</span></label
-  >`;
-};
 
 
 /***/ }),
@@ -431,13 +463,22 @@ const getFilterElement = (el) => {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: getRandomNumber */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomNumber", function() { return getRandomNumber; });
-const getRandomNumber = (min = 0, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return getRandomNumber; });
+function getRandomNumber(min = 0, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// export const getRandomFromArray = (array) => {
+//   array.sort((a, b) => Math.random() - 0.5);
+// };
+
+// getRandomFromArray([5, 3, 2, 1]);
+// console.log(getRandomFromArray([5, 3, 2, 1]));
 
 
 /***/ })

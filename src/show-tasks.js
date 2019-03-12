@@ -1,26 +1,33 @@
 import {default as getRandomNumber} from './utils.js';
+import {getTask} from './get-task.js';
 
 const taskNode = document.querySelector(`.board__tasks`);
 
-export default function showTasks(quantity) {
-  let taskElementString = ``;
-  const fragment = document.createDocumentFragment();
-  const parser = new DOMParser();
-  for (let i = 0; i < quantity; i++) {
-    taskElementString += templateTask;
-    const cardElementObj = parser.parseFromString(taskElementString, `text/html`);
-    fragment.appendChild(cardElementObj.body.childNodes[0]);
-  }
-  taskNode.appendChild(fragment);
-}
+// export default function showTasks(quantity) {
+//   let taskElementString = ``;
+//   const fragment = document.createDocumentFragment();
+//   const parser = new DOMParser();
+//   const tasksSet = new Set();
+//   for (let i = 0; i < quantity; i++) {
+//     tasksSet.add(getTask());
+//     console.log(tasksSet);
+//     taskElementString += templateTask(getTask());
+//     const taskElementObj = parser.parseFromString(taskElementString, `text/html`);
+//     fragment.appendChild(taskElementObj.body.childNodes[0]);
+//   }
+//   taskNode.appendChild(fragment);
+// }
+
+export const showRandomTasks = (dest, quantity) => {
+  dest.insertAdjacentHTML(`beforeend`, new Array(quantity).fill(``).map(() => templateTask(getTask())));
+};
 
 export const onFilterLoaderClick = () => {
   taskNode.innerHTML = ``;
   showTasks(getRandomNumber(1, 10));
 };
 
-
-const templateTask = `<article class="card card--edit card--black">
+const templateTask = (task) => `<article class="card card--edit card--${task.color}">
             <form class="card__form" method="get">
               <div class="card__inner">
                 <div class="card__control">
@@ -51,7 +58,7 @@ const templateTask = `<article class="card card--edit card--black">
                       placeholder="Start typing your text here..."
                       filterName="text"
                     >
-This is example of new task, you can add picture, set date and time, add tags.</textarea
+${task.title}</textarea
                     >
                   </label>
                 </div>
@@ -60,7 +67,7 @@ This is example of new task, you can add picture, set date and time, add tags.</
                   <div class="card__details">
                     <div class="card__dates">
                       <button class="card__date-deadline-toggle" type="button">
-                        date: <span class="card__date-status">no</span>
+                        date: <span class="card__date-status">${task.dueDate}</span>
                       </button>
 
                       <fieldset class="card__date-deadline" disabled>
@@ -83,7 +90,7 @@ This is example of new task, you can add picture, set date and time, add tags.</
                       </fieldset>
 
                       <button class="card__repeat-toggle" type="button">
-                        repeat:<span class="card__repeat-status">no</span>
+                        repeat:<span class="card__repeat-status">${}</span>
                       </button>
 
                       <fieldset class="card__repeat-days" disabled>
@@ -166,7 +173,7 @@ This is example of new task, you can add picture, set date and time, add tags.</
                     </div>
 
                     <div class="card__hashtag">
-                      <div class="card__hashtag-list"></div>
+                      <div class="card__hashtag-list">${task.tags}</div>
 
                       <label>
                         <input
@@ -186,7 +193,7 @@ This is example of new task, you can add picture, set date and time, add tags.</
                       filterName="img"
                     />
                     <img
-                      src="img/add-photo.svg"
+                      src="${task.picture}"
                       alt="task picture"
                       class="card__img"
                     />

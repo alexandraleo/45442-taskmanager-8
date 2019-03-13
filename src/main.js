@@ -9,7 +9,6 @@ const filterNode = document.querySelector(`.main__filter`);
 const onFilterLoaderClick = function (evt) {
   if (evt.target.className === `main__filter`) {
     taskNode.innerHTML = ``;
-    console.log(evt.target.className);
     showRandomTasks(taskNode, getRandomNumber(1, 10));
   }
 };

@@ -5,3 +5,6 @@ export default function getRandomNumber(min = 0, max) {
 // array.sort(() => 0.5 - Math.random());
 
 export const getRandomBoolean = () => (Math.floor(Math.random() * 2) === 0);
+
+export const getRandomCoin = () => (Math.floor(Math.random() * 2));
+

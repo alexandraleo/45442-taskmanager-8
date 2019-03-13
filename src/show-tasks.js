@@ -1,7 +1,7 @@
-import {default as getRandomNumber} from './utils.js';
+
 import {getTask} from './get-task.js';
 
-const taskNode = document.querySelector(`.board__tasks`);
+// const taskNode = document.querySelector(`.board__tasks`);
 
 // export default function showTasks(quantity) {
 //   let taskElementString = ``;
@@ -19,15 +19,10 @@ const taskNode = document.querySelector(`.board__tasks`);
 // }
 
 export const showRandomTasks = (dest, quantity) => {
-  dest.insertAdjacentHTML(`beforeend`, new Array(quantity).fill(``).map(() => templateTask(getTask())));
+  dest.insertAdjacentHTML(`beforeend`, new Array(quantity).fill(``).map(() => templateTask(getTask())).join(``));
 };
 
-export const onFilterLoaderClick = () => {
-  taskNode.innerHTML = ``;
-  showTasks(getRandomNumber(1, 10));
-};
-
-const templateTask = (task) => `<article class="card card--edit card--${task.color}">
+const templateTask = (task) => `<article class="card card--edit card--${task.color} ${task.isRepeating ? `card--repeat` : ``}">
             <form class="card__form" method="get">
               <div class="card__inner">
                 <div class="card__control">
@@ -90,7 +85,7 @@ ${task.title}</textarea
                       </fieldset>
 
                       <button class="card__repeat-toggle" type="button">
-                        repeat:<span class="card__repeat-status">${}</span>
+                        repeat:<span class="card__repeat-status"></span>
                       </button>
 
                       <fieldset class="card__repeat-days" disabled>
@@ -101,6 +96,7 @@ ${task.title}</textarea
                             id="repeat-mo-1"
                             filterName="repeat"
                             value="mo"
+                            ${task.isRepeating.Mo ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-mo-1"
                             >mo</label
@@ -111,7 +107,7 @@ ${task.title}</textarea
                             id="repeat-tu-1"
                             filterName="repeat"
                             value="tu"
-                            checked
+                            ${task.isRepeating.Tu ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-tu-1"
                             >tu</label
@@ -122,6 +118,7 @@ ${task.title}</textarea
                             id="repeat-we-1"
                             filterName="repeat"
                             value="we"
+                            ${task.isRepeating.We ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-we-1"
                             >we</label
@@ -132,6 +129,7 @@ ${task.title}</textarea
                             id="repeat-th-1"
                             filterName="repeat"
                             value="th"
+                            ${task.isRepeating.Th ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-th-1"
                             >th</label
@@ -142,7 +140,7 @@ ${task.title}</textarea
                             id="repeat-fr-1"
                             filterName="repeat"
                             value="fr"
-                            checked
+                            ${task.isRepeating.Fr ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-fr-1"
                             >fr</label
@@ -153,6 +151,7 @@ ${task.title}</textarea
                             filterName="repeat"
                             value="sa"
                             id="repeat-sa-1"
+                            ${task.isRepeating.Sa ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-sa-1"
                             >sa</label
@@ -163,7 +162,7 @@ ${task.title}</textarea
                             id="repeat-su-1"
                             filterName="repeat"
                             value="su"
-                            checked
+                            ${task.isRepeating.Su ? `checked` : ``}
                           />
                           <label class="card__repeat-day" for="repeat-su-1"
                             >su</label

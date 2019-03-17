@@ -1,4 +1,4 @@
-import getRandomNumber, {getRandomBoolean, getRandomCoin} from './utils.js';
+import {default as getRandomNumber, getRandomBoolean} from './utils.js';
 
 const colorSet = new Set([
   `black`,
@@ -24,10 +24,11 @@ const tagsArray = [...tagsSet];
 const anyTags = () => {
   tagsArray.sort(() => 0.5 - Math.random());
   const [first, second, third] = tagsArray;
-  return [first, second, third].map((it) => `<li> ${it} </li>`).join(``);
+  return [first, second, third];
+  // .map((it) => `<li> ${it} </li>`).join(``);
 };
 
-export const getTask = () => ({
+export const getTask = {
   title: [
     `Изучить теорию`,
     `Сделать домашку`,
@@ -45,8 +46,5 @@ export const getTask = () => ({
     'Fr': getRandomBoolean(),
     'Sa': getRandomBoolean(),
     'Su': getRandomBoolean()
-  },
-  isFavorite: getRandomBoolean(),
-  isDone: getRandomBoolean(),
-  isRepeating: getRandomCoin()
-});
+  }
+};

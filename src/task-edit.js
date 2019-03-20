@@ -1,6 +1,7 @@
-import createElement from './create-element.js';
-export default class TaskEdit {
+import Component from './component.js';
+export default class TaskEdit extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._dueDay = data.dueDay;
     this._tags = data.tags;
@@ -8,12 +9,8 @@ export default class TaskEdit {
     this._repeatingDays = data.repeatingDays;
     this._color = data.color;
 
-    this._element = null;
     this._onSubmit = null;
-    this._state = {
-      // isEdit: false
-    };
-
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
   _isRepeating() {
     return Object.values(this._repeatingDays).some((it) => it === true);
@@ -25,10 +22,6 @@ export default class TaskEdit {
 
   set onSubmit(fn) {
     this._onSubmit = fn;
-  }
-
-  get element() {
-    return this._element;
   }
 
   get template() {
@@ -289,19 +282,10 @@ ${this._title}</textarea
           </article>`.trim();
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
   bind() {
-    this._element.querySelector(`.card__form`).addEventListener(`submit`, this._onSubmitButtonClick.bind(this));
+    this._element.querySelector(`.card__form`).addEventListener(`submit`, this._onSubmitButtonClick);
   }
   unbind() {
     this._element.querySelector(`.card__form`).removeEventListener(`submit`, this._onSubmitButtonClick);
-  }
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }

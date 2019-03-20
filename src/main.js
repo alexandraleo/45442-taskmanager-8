@@ -1,12 +1,8 @@
 import {showFilters} from './show-filters.js';
 import {getTask} from './get-task.js';
-// import {showRandomTasks} from './show-tasks.js';
-// import {default as getRandomNumber} from './utils.js';
 import {default as Task} from './task.js';
 import {default as TaskEdit} from './task-edit.js';
 
-
-// const TASKS_QUANTITY = 5;
 const taskNode = document.querySelector(`.board__tasks`);
 const filterNode = document.querySelector(`.main__filter`);
 
@@ -16,10 +12,6 @@ const onFilterLoaderClick = function (evt) {
     taskNode.appendChild(filterTask.render());
   }
 };
-
-// const firstTask = new Task(getTask);
-// firstTask.render(taskNode);
-// showRandomTasks(taskNode, TASKS_QUANTITY);
 
 showFilters();
 filterNode.addEventListener(`click`, onFilterLoaderClick);

@@ -1,6 +1,6 @@
 import createElement from './create-element.js';
 
-export class Component {
+export default class Component {
   constructor() {
     if (new.target === Component) {
       throw new Error(`Can't instantiate BaseComponent, only concrete ine.`);

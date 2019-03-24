@@ -1,4 +1,7 @@
 import Component from './component.js';
+import {Color} from './get-task.js';
+import flatpickr from 'flatpickr';
+import moment from 'moment';
 export default class TaskEdit extends Component {
   constructor(data) {
     super();
@@ -11,13 +14,68 @@ export default class TaskEdit extends Component {
 
     this._onSubmit = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onChangeDate = this._onChangeDate.bind(this);
+    this._onChangeRepeating = this._onChangeRepeating.bind(this);
+
+    this._state.isDate = false;
+    this._state.isRepeating = false;
   }
+  _processForm(formData) {
+    const entry = {
+      title: ``,
+      color: ``,
+      tags: new Set(),
+      dueDate: new Date(),
+      repeatingDays: {
+        'mo': false,
+        'tu': false,
+        'we': false,
+        'th': false,
+        'fr': false,
+        'sa': false,
+        'su': false,
+      }
+    };
+    const taskEditMapper = TaskEdit.createMapper(entry);
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (taskEditMapper[property]) {
+        taskEditMapper[property](value);
+      }
+    }
+    return entry;
+  }
+
   _isRepeating() {
     return Object.values(this._repeatingDays).some((it) => it === true);
   }
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
-    return typeof this._onSubmit === `function` && this._onSubmit();
+    const formNode = this._element.querySelector(`.card__form`);
+    const formData = new FormData(formNode);
+    const newData = this._processForm(formData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+    // console.log(newData);
+    this.update(newData);
+  }
+
+  _onChangeDate() {
+    this._state.isDate = !this._state.isDate;
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
+  _onChangeRepeating() {
+    this._state.isRepeating = !this._state.isRepeating;
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = this.template;
   }
 
   set onSubmit(fn) {
@@ -25,267 +83,175 @@ export default class TaskEdit extends Component {
   }
 
   get template() {
-    return `<article class="card card--edit card--${this._color} ${this._isRepeating ? `card--repeat` : ``}">
-            <form class="card__form" method="get">
-              <div class="card__inner">
-                <div class="card__control">
-                  <button type="button" class="card__btn card__btn--edit">
-                    edit
-                  </button>
-                  <button type="button" class="card__btn card__btn--archive">
-                    archive
-                  </button>
-                  <button
-                    type="button"
-                    class="card__btn card__btn--favorites card__btn--disabled"
-                  >
-                    favorites
-                  </button>
-                </div>
+    return `
+    <article class="card card--edit ${Color[this._color]}  ${this._isRepeating() ? `card--repeat` : ``} ${this._dueDate && this._dueDate <= Date.now() ? `card--deadline` : ``}">
+      <form class="card__form" method="get">
+        <div class="card__inner">
+          <div class="card__control">
+            <button type="button" class="card__btn card__btn--edit">edit</button>
+            <button type="button" class="card__btn card__btn--archive">archive</button>
+            <button type="button" class="card__btn card__btn--favorites card__btn--disabled">favorites</button>
+          </div>
 
-                <div class="card__color-bar">
-                  <svg width="100%" height="10">
-                    <use xlink:href="#wave"></use>
-                  </svg>
-                </div>
+          <div class="card__color-bar">
+            <svg class="card__color-bar-wave" width="100%" height="10">
+              <use xlink:href="#wave"></use>
+            </svg>
+          </div>
 
-                <div class="card__textarea-wrap">
-                  <label>
-                    <textarea
-                      class="card__text"
-                      placeholder="Start typing your text here..."
-                      filterName="text"
-                    >
-${this._title}</textarea
-                    >
+          <div class="card__textarea-wrap">
+            <label>
+              <textarea class="card__text" placeholder="Start typing your text here..." name="text">${this._title}</textarea>
+            </label>
+          </div>
+
+          <div class="card__settings">
+            <div class="card__details">
+              <div class="card__dates">
+                <button class="card__date-deadline-toggle" type="button">
+                  date: <span class="card__date-status">${this._state.isDate ? `yes` : `no`}</span>
+                </button>
+
+                <fieldset class="card__date-deadline" ${!this._state.isDate && `disabled`}>
+                  <label class="card__input-deadline-wrap">
+                    <input class="card__date" type="text" placeholder="23 September" value="${moment(this._dueDay).format(`DD MMMM`)}" name="date" />
                   </label>
-                </div>
 
-                <div class="card__settings">
-                  <div class="card__details">
-                    <div class="card__dates">
-                      <button class="card__date-deadline-toggle" type="button">
-                        date: <span class="card__date-status">${this._dueDate}</span>
-                      </button>
+                  <label class="card__input-deadline-wrap">
+                    <input class="card__time" type="text" placeholder="11:15 PM" value="${moment(this._dueDay).format(`HH:MM A`)}" name="time" />
+                  </label>
+                </fieldset>
 
-                      <fieldset class="card__date-deadline" disabled>
-                        <label class="card__input-deadline-wrap">
-                          <input
-                            class="card__date"
-                            type="text"
-                            placeholder="23 September"
-                            filterName="date"
-                          />
-                        </label>
-                        <label class="card__input-deadline-wrap">
-                          <input
-                            class="card__time"
-                            type="text"
-                            placeholder="11:15 PM"
-                            filterName="time"
-                          />
-                        </label>
-                      </fieldset>
+                <button class="card__repeat-toggle" type="button">
+                  repeat: <span class="card__repeat-status">${this._state.isRepeating ? `yes` : `no`}</span>
+                </button>
 
-                      <button class="card__repeat-toggle" type="button">
-                        repeat:<span class="card__repeat-status"></span>
-                      </button>
+                <fieldset class="card__repeat-days" ${!this._state.isRepeating && `disabled`}>
+                  <div class="card__repeat-days-inner">
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-mo-5" name="repeat" value="mo"
+                    ${this._repeatingDays.mo && `checked`}/>
+                    <label class="card__repeat-day" for="repeat-mo-5">mo</label>
 
-                      <fieldset class="card__repeat-days" disabled>
-                        <div class="card__repeat-days-inner">
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-mo-1"
-                            filterName="repeat"
-                            value="mo"
-                            ${this._isRepeating.Mo ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-mo-1"
-                            >mo</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-tu-1"
-                            filterName="repeat"
-                            value="tu"
-                            ${this._isRepeating.Tu ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-tu-1"
-                            >tu</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-we-1"
-                            filterName="repeat"
-                            value="we"
-                            ${this._isRepeating.We ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-we-1"
-                            >we</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-th-1"
-                            filterName="repeat"
-                            value="th"
-                            ${this._isRepeating.Th ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-th-1"
-                            >th</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-fr-1"
-                            filterName="repeat"
-                            value="fr"
-                            ${this._isRepeating.Fr ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-fr-1"
-                            >fr</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            filterName="repeat"
-                            value="sa"
-                            id="repeat-sa-1"
-                            ${this._isRepeating.Sa ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-sa-1"
-                            >sa</label
-                          >
-                          <input
-                            class="visually-hidden card__repeat-day-input"
-                            type="checkbox"
-                            id="repeat-su-1"
-                            filterName="repeat"
-                            value="su"
-                            ${this._isRepeating.Su ? `checked` : ``}
-                          />
-                          <label class="card__repeat-day" for="repeat-su-1"
-                            >su</label
-                          >
-                        </div>
-                      </fieldset>
-                    </div>
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-tu-5" name="repeat" value="tu"
+                    ${this._repeatingDays.tu && `checked`} />
+                    <label class="card__repeat-day" for="repeat-tu-5">tu</label>
 
-                    <div class="card__hashtag">
-                      <div class="card__hashtag-list">${Array.from(this._tags).map((tag) => (`<span class="card__hashtag-inner">
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-we-5" name="repeat" value="we"
+                    ${this._repeatingDays.we && `checked`}/>
+                    <label class="card__repeat-day" for="repeat-we-5" >w</label>
+
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-th-5" name="repeat" value="th"
+                    ${this._repeatingDays.th && `checked`} />
+                    <label class="card__repeat-day" for="repeat-th-5">th</label>
+
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-fr-5" name="repeat" value="fr"
+                    ${this._repeatingDays.fr && `checked`} />
+                    <label class="card__repeat-day" for="repeat-fr-5" >fr</label>
+
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" name="repeat" value="sa" id="repeat-sa-5"
+                    ${this._repeatingDays.sa && `checked`} />
+                    <label class="card__repeat-day" for="repeat-sa-5">sa</label>
+
+                    <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-su-5" name="repeat" value="su"
+                    ${this._repeatingDays.su && `checked`} />
+                    <label class="card__repeat-day" for="repeat-su-5" >su</label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="card__hashtag">
+                <div class="card__hashtag-list">
+                  ${(Array.from(this._tags).map((tag) => (`
+                    <span class="card__hashtag-inner">
                       <input type="hidden" name="hashtag" value="${tag}" class="card__hashtag-hidden-input" />
                       <button type="button" class="card__hashtag-name">#${tag}</button>
                       <button type="button" class="card__hashtag-delete">delete</button>
-                    </span>`.trim())).join(``)}</div>
-
-                      <label>
-                        <input
-                          type="text"
-                          class="card__hashtag-input"
-                          filterName="hashtag-input"
-                          placeholder="Type new hashtag here"
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <label class="card__img-wrap card__img-wrap--empty">
-                    <input
-                      type="file"
-                      class="card__img-input visually-hidden"
-                      filterName="img"
-                    />
-                    <img
-                      src="${this._picture}"
-                      alt="task picture"
-                      class="card__img"
-                    />
-                  </label>
-
-                  <div class="card__colors-inner">
-                    <h3 class="card__colors-title">Color</h3>
-                    <div class="card__colors-wrap">
-                      <input
-                        type="radio"
-                        id="color-black-1"
-                        class="card__color-input card__color-input--black visually-hidden"
-                        filterName="color"
-                        value="black"
-                        checked
-                      />
-                      <label
-                        for="color-black-1"
-                        class="card__color card__color--black"
-                        >black</label
-                      >
-                      <input
-                        type="radio"
-                        id="color-yellow-1"
-                        class="card__color-input card__color-input--yellow visually-hidden"
-                        filterName="color"
-                        value="yellow"
-                      />
-                      <label
-                        for="color-yellow-1"
-                        class="card__color card__color--yellow"
-                        >yellow</label
-                      >
-                      <input
-                        type="radio"
-                        id="color-blue-1"
-                        class="card__color-input card__color-input--blue visually-hidden"
-                        filterName="color"
-                        value="blue"
-                      />
-                      <label
-                        for="color-blue-1"
-                        class="card__color card__color--blue"
-                        >blue</label
-                      >
-                      <input
-                        type="radio"
-                        id="color-green-1"
-                        class="card__color-input card__color-input--green visually-hidden"
-                        filterName="color"
-                        value="green"
-                      />
-                      <label
-                        for="color-green-1"
-                        class="card__color card__color--green"
-                        >green</label
-                      >
-                      <input
-                        type="radio"
-                        id="color-pink-1"
-                        class="card__color-input card__color-input--pink visually-hidden"
-                        filterName="color"
-                        value="pink"
-                      />
-                      <label
-                        for="color-pink-1"
-                        class="card__color card__color--pink"
-                        >pink</label
-                      >
-                    </div>
-                  </div>
+                    </span>`.trim()))).join(``)}
                 </div>
 
-                <div class="card__status-btns">
-                  <button class="card__save" type="submit">save</button>
-                  <button class="card__delete" type="button">delete</button>
-                </div>
+                <label>
+                  <input type="text" class="card__hashtag-input" name="hashtag-input" placeholder="Type new hashtag here" />
+                </label>
               </div>
-            </form>
-          </article>`.trim();
+            </div>
+
+            <label class="card__img-wrap card__img-wrap--empty">
+              <input type="file" class="card__img-input visually-hidden" name="img" />
+            </label>
+
+            <div class="card__colors-inner">
+              <h3 class="card__colors-title">Color</h3>
+              <div class="card__colors-wrap">
+                <input type="radio" id="color-black-5" class="card__color-input card__color-input--black visually-hidden" name="color" value="black"
+                ${this._color === `black` && `checked`}/>
+                <label for="color-black-5" class="card__color card__color--black">black</label>
+
+                <input type="radio" id="color-yellow-5" class="card__color-input card__color-input--yellow visually-hidden" name="color" value="yellow"
+                ${this._color === `yellow` && `checked`} />
+                <label for="color-yellow-5" class="card__color card__color--yellow">yellow</label>
+
+                <input type="radio" id="color-blue-5" class="card__color-input card__color-input--blue visually-hidden" name="color" value="blue"
+                ${this._color === `blue` && `checked`} />
+                <label for="color-blue-5" class="card__color card__color--blue">blue</label>
+
+                <input type="radio" id="color-green-5" class="card__color-input card__color-input--green visually-hidden" name="color" value="green"
+                ${this._color === `green` && `checked`} />
+                <label for="color-green-5" class="card__color card__color--green">green</label>
+
+                <input type="radio" id="color-pink-5" class="card__color-input card__color-input--pink visually-hidden" name="color" value="pink"
+                ${this._color === `pink` && `checked`} />
+                <label for="color-pink-5" class="card__color card__color--pink">pink</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card__status-btns">
+            <button class="card__save" type="submit">save</button>
+            <button class="card__delete" type="button">delete</button>
+          </div>
+        </div>
+      </form>
+    </article>`.trim();
   }
 
   bind() {
     this._element.querySelector(`.card__form`).addEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`).addEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`).addEventListener(`click`, this._onChangeRepeating);
+
+    if (this._state.isDate) {
+      flatpickr(this._element.querySelector(`.card__date`), {altInput: true, altFormat: `j F`, dateFormat: `j F`});
+      flatpickr(this._element.querySelector(`.card__time`), {enableTime: true, noCalendar: true, altInput: true, altFormat: `h:i K`, dateFormat: `h:i K`});
+    }
   }
   unbind() {
     this._element.querySelector(`.card__form`).removeEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`).removeEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`).removeEventListener(`click`, this._onChangeRepeating);
+  }
+  update(data) {
+    this._title = data.title;
+    this._tags = data.tags;
+    this._color = data.color;
+    this._repeatingDays = data.repeatingDays;
+    // console.log(data.dueDate);
+    this._dueDate = data.dueDate;
+  }
+  static createMapper(target) {
+    return {
+      hashtag: (value) => target.tags.add(value),
+      text: (value) => {
+        target.title = value;
+      },
+      color: (value) => {
+        target.color = value;
+      },
+      repeat: (value) => {
+        target.repeatingDays[value] = true;
+      },
+      date: (value) => {
+        target.dueDate = value;
+      },
+    };
   }
 }

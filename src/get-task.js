@@ -1,15 +1,15 @@
-import {default as getRandomNumber, getRandomBoolean} from './utils.js';
+// import {getRandomBoolean} from './utils.js';
 
-const colorSet = new Set([
-  `black`,
-  `yellow`,
-  `blue`,
-  `green`,
-  `pink`
-]);
+// const colorSet = new Set([
+//   `black`,
+//   `yellow`,
+//   `blue`,
+//   `green`,
+//   `pink`
+// ]);
 
-const colorArray = [...colorSet];
-const anyColor = () => colorArray[getRandomNumber(0, colorArray.length)];
+// const colorArray = [...colorSet];
+// const anyColor = () => colorArray[getRandomNumber(0, colorArray.length)];
 
 const tagsSet = new Set([
   `homework`,
@@ -28,23 +28,42 @@ const anyTags = () => {
   // .map((it) => `<li> ${it} </li>`).join(``);
 };
 
-export const getTask = {
+const randomPicture = () => {
+  return `http://picsum.photos/100/100?r=${Math.random()}`;
+};
+
+export const getTask = () => ({
   title: [
     `Изучить теорию`,
     `Сделать домашку`,
     `Пройти интенсив на соточку`
   ][Math.floor(Math.random() * 3)],
-  dueDate: Date.now() + 1 + Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
+  dueDate: (Date.now() + 1 + Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000),
   tags: anyTags(),
-  picture: `http://picsum.photos/100/100?r=${Math.random()}`,
-  color: anyColor(),
+  picture: randomPicture(),
   repeatingDays: {
-    'Mo': getRandomBoolean(),
-    'Tu': getRandomBoolean(),
-    'We': getRandomBoolean(),
-    'Th': getRandomBoolean(),
-    'Fr': getRandomBoolean(),
-    'Sa': getRandomBoolean(),
-    'Su': getRandomBoolean()
-  }
+    'mo': false,
+    'tu': false,
+    'we': false,
+    'th': false,
+    'fr': false,
+    'sa': false,
+    'su': false
+  },
+  color: [
+    `black`,
+    `yellow`,
+    `blue`,
+    `pink`,
+    `green`
+  ][Math.floor(Math.random() * 3)],
+  state: {}
+});
+
+export const Color = {
+  blue: `card--blue`,
+  black: `card--black`,
+  yellow: `card--yellow`,
+  green: `card--green`,
+  pink: `card--pink`,
 };
